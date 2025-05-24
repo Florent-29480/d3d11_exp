@@ -11,7 +11,7 @@ int CALLBACK WinMain(
 {
 	try
 	{
-		Window wnd(800, 300, "d3d11_app");
+		Window wnd(1160, 760, "d3d11_app");
 
 		MSG msg;
 		BOOL gResult;
