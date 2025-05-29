@@ -113,12 +113,14 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_KILLFOCUS: // no zombie keys on focus loss !
 		kbd.ClearState();
 		break;
+	case WM_SYSKEYDOWN: //for alt key
 	case WM_KEYDOWN:
 		if (!(lParam & 0x40000000) || kbd.AutoRepeatIsEnabled()) //bit 0x40000000 is ONE if key is already down -> autorepeat
 		{
 			kbd.OnKeyPressed(static_cast<unsigned char>(wParam));
 		}
 		break;
+	case WM_SYSKEYUP: //for alt key
 	case WM_KEYUP:
 		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
