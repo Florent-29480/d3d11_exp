@@ -77,6 +77,32 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
+void Window::SetTitle(const std::string& title)
+{
+	if (SetWindowText(hWnd, title.c_str()) == 0)
+	{
+		throw CHWND_LAST_EXCEPT();
+	}
+}
+
+std::optional<int> Window::ProcessMessages()
+{
+	MSG msg;
+	//while queue has message, remove and dispatch but do not block
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		//force return on quit message
+		if (msg.message == WM_QUIT)
+		{
+			return msg.wParam;
+		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	//return nothing when not quitting
+	return {};
+}
+
 LRESULT WINAPI Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 	//use create param passed in from CreateWindow() to store window class pointer

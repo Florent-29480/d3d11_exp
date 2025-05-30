@@ -1,6 +1,6 @@
 #include "App.h"
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 400
+#define HEIGHT 400
 
 App::App()
 	:
@@ -9,20 +9,14 @@ App::App()
 
 int App::Go()
 {
-	MSG msg;
-	BOOL gResult;
-	while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
+	while (true)
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if (const auto ecode = Window::ProcessMessages()) //ecode will be a bool set to true if it has a value
+		{
+			return *ecode;
+		}
+		DoFrame();
 	}
-	//check for errors
-	if (gResult == -1)
-	{
-		throw CHWND_LAST_EXCEPT();
-	}
-	//wParam passed to PostQuitMessage
-	return msg.wParam;
 }
 
 void App::DoFrame()
