@@ -43,6 +43,9 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 
 //Window
 Window::Window(int width, int height, const char* name)
+	:
+	width(width),
+	height(height)
 {
 	//Calculate window size based on region size
 	RECT wr;
@@ -108,10 +111,12 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
+		break;
 
-		//keyboard messages
-	case WM_KILLFOCUS: // no zombie keys on focus loss !
+	//keyboard messages
+	case WM_KILLFOCUS: // no zombies on focus loss !
 		kbd.ClearState();
+		mouse.ClearState();
 		break;
 	case WM_SYSKEYDOWN: //for alt key
 	case WM_KEYDOWN:
@@ -127,11 +132,35 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_CHAR:
 		kbd.OnChar(static_cast<unsigned char>(wParam));
 		break;
-		//mouse messages
+	
+	//mouse messages
 	case WM_MOUSEMOVE:
 	{
-		POINTS pt = MAKEPOINTS(lParam);
-		mouse.OnMouseMove(pt.x, pt.y);
+		const POINTS pt = MAKEPOINTS(lParam);
+		//in client
+		if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
+		{
+			mouse.OnMouseMove(pt.x, pt.y);
+			if (!mouse.IsInWindow()) //record capture if needed
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+			}
+		}
+		//not in client
+		else
+		{
+			if (wParam & (MK_LBUTTON | MK_RBUTTON)) // drag while outside & captured
+			{
+				mouse.OnMouseMove(pt.x, pt.y);
+			}
+			//button up => release capture
+			else
+			{
+				ReleaseCapture();
+				mouse.OnMouseLeave();
+			}
+		}
 		break;
 	}
 	case WM_LBUTTONDOWN:
